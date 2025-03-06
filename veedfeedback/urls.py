@@ -17,10 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import render
+from feedback import views as feedback_views  # Add this import
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', lambda request: render(request, 'index.html'), name='home'),
-    path('accounts/', include('django.contrib.auth.urls')),  # This must come before accounts.urls
-    path('accounts/', include('accounts.urls', namespace='accounts')),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('feedback/', include('feedback.urls')),
+    # Change this line to point directly to the view
+    path('f/<slug:slug>/', feedback_views.public_form_view, name='public_form'),
 ]
