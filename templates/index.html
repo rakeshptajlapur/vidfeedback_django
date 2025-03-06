@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-4">Collect Video Testimonials with Ease</h1>
+            <p class="lead mb-5">Transform customer feedback into powerful video testimonials. Boost your social proof and build trust with authentic customer stories.</p>
+            <a href="#pricing" class="btn btn-light btn-lg px-5">View Pricing</a>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Simple, Transparent Pricing</h2>
+            <div class="row g-4">
+                <!-- Free Plan -->
+                <div class="col-md-4">
+                    <div class="card pricing-card h-100">
+                        <div class="card-body text-center p-5">
+                            <h3>Free</h3>
+                            <div class="display-6 my-3">$0</div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2">1 Form</li>
+                                <li class="mb-2">10 Submissions</li>
+                                <li class="mb-2">Basic Analytics</li>
+                            </ul>
+                            <a href="{% url 'accounts:register' %}?plan=FREE" class="btn btn-outline-primary w-100">Get Started</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Basic Plan -->
+                <div class="col-md-4">
+                    <div class="card pricing-card h-100 border-primary">
+                        <div class="card-body text-center p-5">
+                            <h3>Basic</h3>
+                            <div class="display-6 my-3">$29</div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2">5 Forms</li>
+                                <li class="mb-2">100 Submissions</li>
+                                <li class="mb-2">Advanced Analytics</li>
+                            </ul>
+                            <a href="{% url 'accounts:register' %}?plan=BASIC" class="btn btn-primary w-100">Choose Basic</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pro Plan -->
+                <div class="col-md-4">
+                    <div class="card pricing-card h-100">
+                        <div class="card-body text-center p-5">
+                            <h3>Pro</h3>
+                            <div class="display-6 my-3">$99</div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2">Unlimited Forms</li>
+                                <li class="mb-2">Unlimited Submissions</li>
+                                <li class="mb-2">Priority Support</li>
+                            </ul>
+                            <a href="{% url 'accounts:register' %}?plan=PRO" class="btn btn-outline-primary w-100">Choose Pro</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Why Choose VidFeedback?</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="bi bi-camera-video feature-icon mb-3"></i>
+                        <h4>Easy Video Recording</h4>
+                        <p>Record directly in browser or upload existing videos. No technical skills needed.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="bi bi-share feature-icon mb-3"></i>
+                        <h4>Shareable Forms</h4>
+                        <p>Create custom feedback forms and share them with your customers easily.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="bi bi-graph-up feature-icon mb-3"></i>
+                        <h4>Testimonial Gallery</h4>
+                        <p>Showcase your video testimonials in a beautiful, responsive gallery.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

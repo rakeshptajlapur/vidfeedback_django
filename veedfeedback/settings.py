@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ipge#*+*(rz#%t^9%)+aasvkg(kh4_%&s4f$m$z3m23x4$#-8='
+SECRET_KEY = 'django-insecure-(g$ikws=$%39($w&yt)k&lu-%!_bwc==i2y5^8=u7_#orv86k4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,17 +31,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts.apps.AccountsConfig',  # Must be first!
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Custom apps
-    'accounts',
-    'feedback',
-    'integrations',
 ]
 
 MIDDLEWARE = [
@@ -59,7 +55,7 @@ ROOT_URLCONF = 'veedfeedback.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Add this line
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,18 +117,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-
-# Add media settings
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-# Auth settings
-AUTH_USER_MODEL = 'accounts.CustomUser'
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGOUT_REDIRECT_URL = 'home'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static'
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Add these settings at the bottom
+AUTH_USER_MODEL = 'accounts.BusinessOwner'
+LOGIN_REDIRECT_URL = 'accounts:dashboard'
+LOGOUT_REDIRECT_URL = 'home'  # This will redirect to homepage after logout

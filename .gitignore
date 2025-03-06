@@ -1,30 +1,5 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Virtual Environment
 venv/
-ENV/
-
-# Django
-*.log
-*.pot
 *.pyc
+__pycache__/
 db.sqlite3
-db.sqlite3-journal
-media/
-
-# Environment
 .env
-.env.*
-!.env.example
-
-# IDE
-.idea/
-.vscode/
-*.swp
-
-# OS
-.DS_Store
-Thumbs.db
