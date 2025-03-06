@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils.safestring import mark_safe  # Add this import
 from .models import FeedbackForm, FormField, FormResponse
 from django.core.files.storage import default_storage
 import os
@@ -69,6 +70,50 @@ def form_edit(request, slug):
 
     return render(request, 'feedback/form_edit.html', {'form': form})
 
+@login_required
+def form_submissions(request, slug):
+    form = get_object_or_404(FeedbackForm, slug=slug, owner=request.user)
+    submissions = form.responses.all()
+    
+    # Debug: Print first submission data
+    if submissions.exists():
+        print("Sample submission data:", submissions.first().data)
+    
+    # Apply filters
+    date_range = request.GET.get('date_range')
+    rating = request.GET.get('rating')
+    
+    if date_range:
+        from datetime import datetime, timedelta
+        today = datetime.now().date()
+        if date_range == 'today':
+            submissions = submissions.filter(created_at__date=today)
+        elif date_range == 'week':
+            week_ago = today - timedelta(days=7)
+            submissions = submissions.filter(created_at__date__gte=week_ago)
+        elif date_range == 'month':
+            month_ago = today - timedelta(days=30)
+            submissions = submissions.filter(created_at__date__gte=month_ago)
+    
+    if rating:
+        submissions = submissions.filter(data__Rating=rating)
+    
+    # Handle export
+    if request.GET.get('export'):
+        return export_submissions(submissions, request.GET.get('export'))
+    
+    submissions = submissions.order_by('-created_at')
+    
+    context = {
+        'form': form,
+        'submissions': submissions,
+    }
+    return render(request, 'feedback/form_submissions.html', context)
+
+def export_submissions(submissions, format):
+    # We'll implement export functionality later
+    pass
+
 def public_form_view(request, slug):
     """Public view for feedback form submission"""
     form = get_object_or_404(FeedbackForm, slug=slug, is_active=True)
@@ -101,7 +146,13 @@ def public_form_view(request, slug):
                 data=response_data
             )
             
-            messages.success(request, "Thank you for your feedback!")
+            messages.success(request, mark_safe("""
+                <h4>Thank you for your feedback! 🎉</h4>
+                <div class="mt-3">
+                    <a href="/" class="btn btn-light me-2">Return Home</a>
+                    <button type="button" class="btn btn-secondary" onclick="window.close()">Close Tab</button>
+                </div>
+            """))
             return redirect('public_form', slug=slug)
             
         except Exception as e:

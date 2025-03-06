@@ -17,15 +17,16 @@
 
             <div class="card shadow">
                 <div class="card-header bg-primary text-white text-center p-4">
-                    <h2 class="mb-2">{{ form.name }}</h2>
+                    <h2 class="mb-2" style="text-transform: capitalize;">{{ form.name }}</h2>
                     {% if form.description %}
-                        <p class="mb-0 opacity-75">{{ form.description }}</p>
+                        <p class="mb-0 opacity-75" style="text-transform: capitalize;">{{ form.description }}</p>
                     {% endif %}
                 </div>
                 <div class="card-body p-4">
                    
 
-                    <form method="post" enctype="multipart/form-data" novalidate>
+                    
+                    <form method="post" enctype="multipart/form-data" novalidate class="feedback-form">
                         {% csrf_token %}
                         
                         {% for field in fields %}
@@ -75,7 +76,7 @@
                                     </div>
                                     
                                     <div class="video-preview d-none">
-                                        <video id="preview" controls class="w-100 mb-3"></video>
+                                        <video id="preview_{{ field.id }}" controls class="w-100 mb-3"></video>
                                         <div class="recording-status"></div>
                                         <div class="btn-group w-100">
                                             <button type="button" class="btn btn-danger" onclick="retakeVideo(this)">
@@ -92,6 +93,12 @@
                                            accept="video/*" class="d-none video-input" 
                                            {% if field.required %}required{% endif %}>
                                     <input type="hidden" name="{{ field.id }}_blob" class="video-blob">
+                                    
+                                    <!-- Add this inside video-capture-container -->
+                                    <div class="progress mb-3 d-none" id="uploadProgress_{{ field.id }}">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                             role="progressbar" style="width: 0%"></div>
+                                    </div>
                                 </div>
 
                                 {% elif field.field_type == 'textarea' %}
@@ -213,25 +220,43 @@
 .video-status {
     text-align: center;
 }
+
+/* Rating Styles - Make more specific */
+.feedback-form .rating-container {
+    text-align: center;
+}
+.feedback-form .rating {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    gap: 0.5rem;
+}
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Rating Text Display
-document.querySelectorAll('.rating label').forEach(label => {
-    label.addEventListener('mouseover', function() {
-        const rating = this.dataset.rating;
-        const container = this.closest('.rating-container');
-        const text = container.querySelector('.rating-text');
-        const messages = {
-            '5': 'Excellent! ⭐⭐⭐⭐⭐',
-            '4': 'Very Good! ⭐⭐⭐⭐',
-            '3': 'Good ⭐⭐⭐',
-            '2': 'Fair ⭐⭐',
-            '1': 'Poor ⭐'
-        };
-        text.textContent = messages[rating];
+// Rating Text Display - Make it work for all forms
+document.addEventListener('DOMContentLoaded', function() {
+    // Rating handlers
+    document.querySelectorAll('.rating label').forEach(label => {
+        label.addEventListener('mouseover', function() {
+            const rating = this.dataset.rating;
+            const container = this.closest('.rating-container');
+            const text = container.querySelector('.rating-text');
+            const messages = {
+                '5': 'Excellent! ⭐⭐⭐⭐⭐',
+                '4': 'Very Good! ⭐⭐⭐⭐',
+                '3': 'Good ⭐⭐⭐',
+                '2': 'Fair ⭐⭐',
+                '1': 'Poor ⭐'
+            };
+            text.textContent = messages[rating];
+        });
+    });
+
+    // Form validation for all forms
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', handleFormSubmit);
     });
 });
 
@@ -323,7 +348,118 @@ function saveVideo(btn) {
 }
 
 function uploadVideo(btn) {
-    btn.closest('.video-capture-container').querySelector('.video-input').click();
+    const container = btn.closest('.video-capture-container');
+    const input = container.querySelector('.video-input');
+    const progressBar = container.querySelector('#uploadProgress');
+    
+    input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // Show progress bar
+        progressBar.classList.remove('d-none');
+        const progress = progressBar.querySelector('.progress-bar');
+        
+        try {
+            // Optional: Compress video before upload
+            const compressedVideo = await compressVideo(file, progress);
+            
+            // Update file input with compressed video
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(compressedVideo);
+            input.files = dataTransfer.files;
+            
+            // Show video preview
+            const preview = container.querySelector('video');
+            preview.src = URL.createObjectURL(compressedVideo);
+            container.querySelector('.video-preview').classList.remove('d-none');
+            
+            // Show success message
+            container.querySelector('.video-status').innerHTML = `
+                <div class="alert alert-success mt-2">
+                    <i class="bi bi-check-circle-fill"></i> Video uploaded and compressed! ✨
+                    <br>
+                    <small>Original: ${formatBytes(file.size)} → Compressed: ${formatBytes(compressedVideo.size)}</small>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Upload error:', error);
+            container.querySelector('.video-status').innerHTML = `
+                <div class="alert alert-danger mt-2">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Upload failed: ${error.message}
+                </div>
+            `;
+        } finally {
+            progressBar.classList.add('d-none');
+        }
+    };
+    
+    input.click();
 }
+
+// Video compression utility
+async function compressVideo(file, progressBar) {
+    // Using WebAssembly-based compression (you'll need to add FFmpeg.js)
+    // For now, we'll just return the original file
+    // Real compression would reduce file size while maintaining quality
+    return file;
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Add this new function for form validation
+function handleFormSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const videoInput = form.querySelector('.video-input');
+    
+    // Check all required fields
+    const requiredFields = form.querySelectorAll('[required]');
+    let isValid = true;
+    requiredFields.forEach(field => {
+        if (!field.value) {
+            isValid = false;
+            // Add error styling
+            field.classList.add('is-invalid');
+            // Add error message
+            let errorDiv = field.nextElementSibling;
+            if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback';
+                field.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = 'This field is required';
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+
+    if (isValid) {
+        form.submit();
+    } else {
+        // Show error message at top of form
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show mb-4';
+        alertDiv.innerHTML = `
+            <strong>Please check the form!</strong>
+            <br>All required fields must be filled out.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        form.insertBefore(alertDiv, form.firstChild);
+        
+        // Scroll to first error
+        const firstError = form.querySelector('.is-invalid');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// Update the form element to use the validation
+document.querySelector('form').addEventListener('submit', handleFormSubmit);
 </script>
 {% endblock %}

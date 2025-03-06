@@ -8,6 +8,7 @@ urlpatterns = [
     path('forms/', views.form_list, name='form_list'),
     path('forms/create/', views.form_create, name='form_create'),
     path('forms/<str:slug>/edit/', views.form_edit, name='form_edit'),
+    path('forms/<str:slug>/submissions/', views.form_submissions, name='form_submissions'),
     
     # Public route
     path('f/<slug:slug>/', views.public_form_view, name='public_form'),
