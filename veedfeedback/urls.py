@@ -21,6 +21,11 @@ from feedback import views as feedback_views  # Add this import
 from django.conf import settings
 from django.conf.urls.static import static
 
+# Customize admin site
+admin.site.site_header = settings.ADMIN_SITE_HEADER
+admin.site.site_title = settings.ADMIN_SITE_TITLE
+admin.site.index_title = settings.ADMIN_INDEX_TITLE
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', lambda request: render(request, 'index.html'), name='home'),

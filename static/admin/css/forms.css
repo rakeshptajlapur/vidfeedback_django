@@ -1,0 +1,48 @@
+.module.aligned {
+    margin: 1em 0;
+}
+
+.form-row {
+    padding: 1em;
+    border-bottom: 1px solid #eee;
+}
+
+.form-row label {
+    width: 150px;
+    display: inline-block;
+    color: #666;
+}
+
+.form-row .data {
+    display: inline-block;
+    padding-left: 1em;
+}
+
+.video-wrapper {
+    margin: 1em 0;
+    padding: 1em;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.badge-info {
+    background: #17a2b8;
+    color: white;
+    padding: 0.25em 0.6em;
+    border-radius: 10px;
+    font-size: 0.875em;
+}
+
+.button {
+    background: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.button:hover {
+    background: #0056b3;
+    text-decoration: none;
+    color: white;
+}
