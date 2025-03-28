@@ -76,7 +76,12 @@
                                     </div>
                                     
                                     <div class="video-preview d-none">
-                                        <video id="preview_{{ field.id }}" controls class="w-100 mb-3"></video>
+                                        <video id="preview_{{ field.id }}" 
+                                               controls 
+                                               class="w-100 mb-3"
+                                               playsinline
+                                               muted>  <!-- Add muted attribute here -->
+                                        </video>
                                         <div class="recording-status"></div>
                                         <div class="btn-group w-100">
                                             <button type="button" class="btn btn-danger" onclick="retakeVideo(this)">
@@ -94,7 +99,6 @@
                                            {% if field.required %}required{% endif %}>
                                     <input type="hidden" name="{{ field.id }}_blob" class="video-blob">
                                     
-                                    <!-- Add this inside video-capture-container -->
                                     <div class="progress mb-3 d-none" id="uploadProgress_{{ field.id }}">
                                         <div class="progress-bar progress-bar-striped progress-bar-animated" 
                                              role="progressbar" style="width: 0%"></div>
@@ -278,16 +282,19 @@ async function startCountdown(container) {
     setTimeout(() => countdownEl.remove(), 1000);
 }
 
+// Replace the startRecording function with:
 async function startRecording(btn) {
     const container = btn.closest('.video-capture-container');
+    const fieldId = container.querySelector('.video-input').name;
+    const preview = container.querySelector(`#preview_${fieldId}`);
+    
     try {
-        // Hide buttons during countdown
         container.querySelector('.btn-group').classList.add('d-none');
         await startCountdown(container);
         
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        const preview = container.querySelector('video');
         preview.srcObject = stream;
+        preview.muted = true;  // Mute preview to prevent echo
         preview.play();
         
         mediaRecorder = new MediaRecorder(stream);
@@ -298,6 +305,7 @@ async function startRecording(btn) {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
             preview.src = URL.createObjectURL(blob);
             preview.srcObject = null;
+            preview.muted = false;  // Unmute for playback
             stream.getTracks().forEach(track => track.stop());
             container.querySelector('.recording-status').textContent = '10s video recorded!';
         };
@@ -305,7 +313,6 @@ async function startRecording(btn) {
         container.querySelector('.video-preview').classList.remove('d-none');
         mediaRecorder.start();
         
-        // Show recording time
         let timeLeft = timeLimit/1000;
         const statusEl = container.querySelector('.recording-status');
         const timer = setInterval(() => {
@@ -318,6 +325,7 @@ async function startRecording(btn) {
         }, 1000);
         
     } catch (err) {
+        console.error('Recording error:', err);
         alert('Error accessing camera: ' + err.message);
     } finally {
         container.querySelector('.btn-group').classList.remove('d-none');
@@ -347,39 +355,30 @@ function saveVideo(btn) {
         '</div>';
 }
 
+// Update the uploadVideo function:
 function uploadVideo(btn) {
     const container = btn.closest('.video-capture-container');
     const input = container.querySelector('.video-input');
-    const progressBar = container.querySelector('#uploadProgress');
+    const progressBar = container.querySelector(`#uploadProgress_${input.name}`);  // Fixed ID
     
     input.onchange = async function(e) {
         const file = e.target.files[0];
         if (!file) return;
         
-        // Show progress bar
         progressBar.classList.remove('d-none');
         const progress = progressBar.querySelector('.progress-bar');
         
         try {
-            // Optional: Compress video before upload
-            const compressedVideo = await compressVideo(file, progress);
-            
-            // Update file input with compressed video
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(compressedVideo);
-            input.files = dataTransfer.files;
-            
-            // Show video preview
-            const preview = container.querySelector('video');
-            preview.src = URL.createObjectURL(compressedVideo);
+            const preview = container.querySelector(`#preview_${input.name}`);  // Fixed ID
+            preview.src = URL.createObjectURL(file);
+            preview.muted = false;  // Ensure uploaded videos play with sound
             container.querySelector('.video-preview').classList.remove('d-none');
             
-            // Show success message
             container.querySelector('.video-status').innerHTML = `
                 <div class="alert alert-success mt-2">
-                    <i class="bi bi-check-circle-fill"></i> Video uploaded and compressed! ✨
+                    <i class="bi bi-check-circle-fill"></i> Video selected! ✨
                     <br>
-                    <small>Original: ${formatBytes(file.size)} → Compressed: ${formatBytes(compressedVideo.size)}</small>
+                    <small>Size: ${formatBytes(file.size)}</small>
                 </div>
             `;
         } catch (error) {

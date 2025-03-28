@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.safestring import mark_safe  # Add this import
+from django.conf import settings  # Add this import
 from .models import FeedbackForm, FormField, FormResponse
 from django.core.files.storage import default_storage
 import os
@@ -74,11 +75,7 @@ def form_edit(request, slug):
 def form_submissions(request, slug):
     form = get_object_or_404(FeedbackForm, slug=slug, owner=request.user)
     submissions = form.responses.all()
-    
-    # Debug: Print first submission data
-    if submissions.exists():
-        print("Sample submission data:", submissions.first().data)
-    
+
     # Apply filters
     date_range = request.GET.get('date_range')
     rating = request.GET.get('rating')
@@ -94,19 +91,16 @@ def form_submissions(request, slug):
         elif date_range == 'month':
             month_ago = today - timedelta(days=30)
             submissions = submissions.filter(created_at__date__gte=month_ago)
-    
+
     if rating:
-        submissions = submissions.filter(data__Rating=rating)
-    
-    # Handle export
-    if request.GET.get('export'):
-        return export_submissions(submissions, request.GET.get('export'))
+        submissions = submissions.filter(data__rating=rating)
     
     submissions = submissions.order_by('-created_at')
     
     context = {
         'form': form,
         'submissions': submissions,
+        'MEDIA_URL': settings.MEDIA_URL,  # Changed to uppercase to match template
     }
     return render(request, 'feedback/form_submissions.html', context)
 
@@ -121,24 +115,23 @@ def public_form_view(request, slug):
     
     if request.method == 'POST':
         try:
-            # Create form response
             response_data = {}
-            video_file = None
             
             # Process each field
             for field in fields:
+                field_key = field.label.lower().replace(' ', '_')  # Convert "Customer Name" to "customer_name"
+                
                 if field.field_type == 'video':
                     if request.FILES.get(str(field.id)):
                         video_file = request.FILES[str(field.id)]
-                        # Save video file
                         file_name = f"testimonials/{form.slug}/{video_file.name}"
                         file_path = default_storage.save(file_name, video_file)
-                        response_data[field.label] = file_path
+                        response_data[field_key] = file_path
                 else:
                     value = request.POST.get(str(field.id))
                     if field.required and not value:
                         raise ValueError(f"{field.label} is required")
-                    response_data[field.label] = value
+                    response_data[field_key] = value
 
             # Save response
             FormResponse.objects.create(

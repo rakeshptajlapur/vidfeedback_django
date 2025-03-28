@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import render
 from feedback import views as feedback_views  # Add this import
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +29,4 @@ urlpatterns = [
     path('feedback/', include('feedback.urls')),
     # Change this line to point directly to the view
     path('f/<slug:slug>/', feedback_views.public_form_view, name='public_form'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
