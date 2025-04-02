@@ -9,36 +9,64 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+*.egg-info/
+*.egg
 
 # Django
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+*.env
+.env.local
+.env.development
+.env.production
 
 # Media and User Uploads
 media/
 */media/*
 testimonials/
 */testimonials/*
+uploads/
+static/uploads/
 *.webm
 *.mp4
 *.mov
 *.avi
+*.mkv
+*.m4v
+
+# Database backups and migrations
+backups/
+*.json
+*.dump
+*.sql
+*.bak
 
 # Virtual Environment
 venv/
 env/
 ENV/
+.venv/
 
-# VS Code
+# IDE
 .vscode/
 *.code-workspace
+.idea/
+*.sublime-workspace
+*.sublime-project
 
 # Windows
 Thumbs.db
 Desktop.ini
+$RECYCLE.BIN/
 
-# Environment Variables
-.env
-*.env
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Cache
+.cache/
+.pytest_cache/
